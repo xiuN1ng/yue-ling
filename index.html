@@ -1,0 +1,421 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>月令 · 试玩</title>
+<style>
+  :root {
+    --bg: #1c1814;
+    --paper: #2a241c;
+    --ink: #e8dcc4;
+    --mute: #8a7d68;
+    --red: #b54a3a;
+    --gold: #c4a35a;
+    --line: #3f372c;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { height: 100%; background: var(--bg); color: var(--ink); font-family: "Songti SC", "Noto Serif SC", "Source Han Serif SC", serif; }
+  body { display: flex; flex-direction: column; min-height: 100%; }
+  header {
+    display: flex; justify-content: space-between; align-items: baseline;
+    padding: 16px 20px 8px; border-bottom: 1px solid var(--line);
+  }
+  header h1 { font-size: 18px; font-weight: 600; letter-spacing: 0.2em; }
+  header h1 span { color: var(--mute); font-size: 13px; letter-spacing: 0.1em; margin-left: 8px; }
+  .stats { display: flex; gap: 18px; font-size: 14px; color: var(--gold); }
+  .stats b { color: var(--ink); font-weight: 600; }
+  main { flex: 1; display: grid; grid-template-columns: 1fr 220px; gap: 0; min-height: 0; }
+  @media (max-width: 720px) {
+    main { grid-template-columns: 1fr; }
+    aside { border-left: none; border-top: 1px solid var(--line); }
+  }
+  .map {
+    position: relative; min-height: 420px;
+    background:
+      radial-gradient(ellipse at 50% 45%, #2c261e 0%, var(--bg) 70%);
+  }
+  .node {
+    position: absolute; width: 108px; transform: translate(-50%, -50%);
+    text-align: center; cursor: pointer; user-select: none;
+    background: var(--paper); border: 1px solid var(--gold);
+    padding: 12px 8px 10px; color: var(--ink);
+  }
+  .node:hover { background: #332c22; }
+  .node.dead { border-color: var(--line); color: var(--mute); cursor: default; }
+  .node .name { font-size: 16px; letter-spacing: 0.15em; }
+  .node .pop { font-size: 12px; color: var(--mute); margin-top: 4px; }
+  .node .pop em { color: var(--gold); font-style: normal; }
+  #town { left: 50%; top: 28%; }
+  #sect { left: 22%; top: 58%; }
+  #market { left: 78%; top: 58%; }
+  #wild { left: 50%; top: 82%; }
+  svg.roads { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; }
+  aside {
+    border-left: 1px solid var(--line); padding: 14px 16px;
+    font-size: 13px; color: var(--mute); overflow: auto;
+  }
+  aside h2 { font-size: 12px; letter-spacing: 0.2em; color: var(--gold); margin-bottom: 8px; font-weight: 600; }
+  #log p { margin-bottom: 8px; line-height: 1.55; }
+  .hint { padding: 10px 20px 16px; font-size: 13px; color: var(--mute); }
+  .overlay {
+    position: fixed; inset: 0; background: rgba(10,8,6,0.72);
+    display: none; align-items: center; justify-content: center; padding: 20px;
+  }
+  .overlay.show { display: flex; }
+  .card {
+    width: min(440px, 100%); background: #231e18; border: 1px solid var(--gold);
+    padding: 22px 22px 18px; color: var(--ink);
+  }
+  .card h3 { font-size: 15px; letter-spacing: 0.16em; color: var(--gold); margin-bottom: 10px; }
+  .card .body { font-size: 15px; line-height: 1.7; margin-bottom: 16px; }
+  .choices button {
+    display: block; width: 100%; text-align: left; margin-bottom: 8px;
+    background: var(--paper); border: 1px solid var(--line); color: var(--ink);
+    padding: 10px 12px; font-size: 14px; font-family: inherit; cursor: pointer;
+  }
+  .choices button:hover { border-color: var(--gold); }
+  .fight { text-align: center; padding: 8px 0 4px; }
+  .fight .vs { letter-spacing: 0.3em; color: var(--gold); margin: 8px 0; }
+  .bar { height: 8px; background: #3a3228; margin: 8px 0 16px; }
+  .bar > i { display: block; height: 100%; width: 0; background: var(--red); }
+  .ghost { opacity: 0.4; }
+</style>
+</head>
+<body>
+  <header>
+    <h1>月令<span>试玩</span></h1>
+    <div class="stats">
+      <span>第 <b id="month">1</b> 月</span>
+      <span>身份 <b id="status">72</b></span>
+      <span>钱 <b id="money">40</b></span>
+    </div>
+  </header>
+  <main>
+    <div class="map" id="map">
+      <svg class="roads" viewBox="0 0 100 100" preserveAspectRatio="none">
+        <line x1="50" y1="28" x2="22" y2="58" stroke="#3f372c" stroke-width="0.4"/>
+        <line x1="50" y1="28" x2="78" y2="58" stroke="#3f372c" stroke-width="0.4"/>
+        <line x1="22" y1="58" x2="50" y2="82" stroke="#3f372c" stroke-width="0.4"/>
+        <line x1="78" y1="58" x2="50" y2="82" stroke="#3f372c" stroke-width="0.4"/>
+        <line x1="50" y1="28" x2="50" y2="82" stroke="#3f372c" stroke-width="0.35"/>
+      </svg>
+      <div class="node" id="town" data-id="town"><div class="name">城镇</div><div class="pop">人 <em>8</em></div></div>
+      <div class="node" id="sect" data-id="sect"><div class="name">宗门</div><div class="pop">人 <em>6</em></div></div>
+      <div class="node" id="market" data-id="market"><div class="name">市集</div><div class="pop">人 <em>9</em></div></div>
+      <div class="node" id="wild" data-id="wild"><div class="name">山野</div><div class="pop">人 <em>4</em></div></div>
+    </div>
+    <aside>
+      <h2>月记</h2>
+      <div id="log"></div>
+    </aside>
+  </main>
+  <p class="hint">点地图上的地点。每月只能去一处。战斗自动打。</p>
+
+  <div class="overlay" id="overlay">
+    <div class="card" id="card"></div>
+  </div>
+
+<script>
+const S = {
+  month: 1,
+  status: 72,
+  money: 40,
+  box: false,
+  busy: false,
+  ended: false,
+  pop: { town: 8, sect: 6, market: 9, wild: 4 },
+};
+
+const NAMES = { town: "城镇", sect: "宗门", market: "市集", wild: "山野" };
+
+function el(id) { return document.getElementById(id); }
+function clamp(n, a, b) { return Math.max(a, Math.min(b, n)); }
+
+function log(text) {
+  const p = document.createElement("p");
+  p.textContent = "第" + S.month + "月　" + text;
+  el("log").prepend(p);
+}
+
+function render() {
+  el("month").textContent = S.month;
+  el("status").textContent = S.status;
+  el("money").textContent = S.money;
+  for (const id of Object.keys(S.pop)) {
+    const node = el(id);
+    const n = S.pop[id];
+    node.querySelector("em").textContent = n;
+    node.classList.toggle("dead", n <= 0);
+    node.classList.toggle("ghost", n <= 2 && n > 0);
+  }
+}
+
+function openCard(html) {
+  el("card").innerHTML = html;
+  el("overlay").classList.add("show");
+}
+function closeCard() {
+  el("overlay").classList.remove("show");
+  el("card").innerHTML = "";
+}
+
+function apply(delta, loc) {
+  if (delta.status) S.status = clamp(S.status + delta.status, 0, 100);
+  if (delta.money) S.money = Math.max(0, S.money + delta.money);
+  if (delta.pop && loc) S.pop[loc] = Math.max(0, S.pop[loc] + delta.pop);
+  if (delta.popAll) {
+    for (const k of Object.keys(S.pop)) S.pop[k] = Math.max(0, S.pop[k] + delta.popAll);
+  }
+  if (delta.box) S.box = true;
+}
+
+function nextMonth(note) {
+  if (note) log(note);
+  S.month += 1;
+  S.busy = false;
+  render();
+  if (S.month > 12) {
+    S.ended = true;
+    log("十二年了。日历还在。");
+  }
+}
+
+function autoFight(title, enemy, power, onWin, onLose) {
+  const you = Math.max(8, S.status);
+  openCard(
+    "<h3>" + title + "</h3>" +
+    "<div class='fight'><div>你　身份 " + S.status + "</div>" +
+    "<div class='vs'>对</div><div>" + enemy + "　" + power + "</div>" +
+    "<div class='bar'><i id='bar'></i></div><div id='fightMsg' style='color:#8a7d68'>交手中</div></div>"
+  );
+  const bar = document.getElementById("bar");
+  let t = 0;
+  const win = you + Math.random() * 20 > power + Math.random() * 16;
+  const timer = setInterval(() => {
+    t += 8;
+    bar.style.width = Math.min(t, 100) + "%";
+    if (t >= 100) {
+      clearInterval(timer);
+      document.getElementById("fightMsg").textContent = win ? "你赢了" : "你输了";
+      setTimeout(() => {
+        closeCard();
+        if (win) onWin(); else onLose();
+      }, 700);
+    }
+  }, 40);
+}
+
+function eventsFor(loc) {
+  const people = S.pop[loc];
+  const empty = people <= 0;
+  const late = S.month >= 4;
+  const list = [];
+
+  if (loc === "town") {
+    if (empty) {
+      list.push({
+        title: "城镇",
+        body: "城门开着。街上没有人。告示还在墙上，字很齐，像刚贴的。",
+        choices: [
+          { t: "读一张", d: { status: -2 }, n: "墙上的字很齐。城是空的。" },
+          { t: "离开", d: {}, n: "空城。" },
+        ]
+      });
+    } else if (!late) {
+      list.push({
+        title: "城镇",
+        body: "里正认得你，把今年的告示递过来，请你改两个字。门外排了几个人等着抄。",
+        choices: [
+          { t: "改了", d: { status: 3, money: 6 }, n: "告示换了两个字。城门的人让路。" },
+          { t: "让门外的人去抄", d: { money: 10, pop: -1 }, n: "告示发出去了。抄的人少了一个。" },
+          { t: "不改", d: { status: -1 }, n: "你没动手。" },
+        ]
+      });
+      list.push({
+        title: "城镇",
+        body: "有人在茶馆里吵，说东头那家铺子的招牌写重了。请你评一句。",
+        choices: [
+          { t: "评了", d: { status: 2, money: 4 }, n: "茶馆里的人听你的。" },
+          { t: "让他们自己吵", d: {}, n: "吵声还在。" },
+        ]
+      });
+    } else {
+      list.push({
+        title: "城镇",
+        body: "里正手里已经有印好的告示，字不是人写的。门外没人排队。他问你还要不要看。",
+        choices: [
+          { t: "看一眼", d: { status: -4 }, n: "字很齐。没有笔迹。" },
+          { t: "说这东西省事", d: { money: 8, pop: -1, box: true }, n: "里正点头。门口更少了。" },
+          { t: "走开", d: { status: -2 }, n: "告示还是贴上去了。" },
+        ]
+      });
+      list.push({
+        title: "城镇",
+        body: "夜市散得早。卖字画的摊只剩一个，老板问你要不要便宜收走剩稿。",
+        choices: [
+          { t: "收下", d: { money: -6, status: 1 }, n: "你买了一卷没署名的稿。" },
+          { t: "介绍他去用箱", d: { money: 12, pop: -2, box: true }, n: "摊收了。人也不见了。" },
+          { t: "不买", d: {}, n: "夜市更空。" },
+        ]
+      });
+    }
+  }
+
+  if (loc === "sect") {
+    if (empty) {
+      list.push({
+        title: "宗门",
+        body: "山门还在。院子里的剑架没人动。钟响了一下，不知道谁敲的。",
+        choices: [
+          { t: "进院", d: { status: -3 }, n: "院是空的。" },
+          { t: "下山", d: {}, n: "山门没关。" },
+        ]
+      });
+    } else if (!late) {
+      list.push({
+        title: "宗门",
+        body: "师兄还在教旧功法。门外排的人比往年少。他请你来看一场。",
+        choices: [
+          { t: "帮他教", d: { status: 2 }, n: "你教了一上午。人还在。" },
+          { t: "劝他换新器", d: { money: 10, pop: -2, box: true }, n: "师兄试了。下午人少了两个。" },
+          { t: "比试一场", fight: { enemy: "师兄", power: 55 } ,
+            win: { d: { status: 4 }, n: "你赢了。旧功法还听你的。" },
+            lose: { d: { status: -6, money: -4 }, n: "你输了。院子里有人低头。" } },
+        ]
+      });
+    } else {
+      list.push({
+        title: "宗门",
+        body: "掌门说外门弟子很多已经不练了。有一口箱子能代练。他看你。",
+        choices: [
+          { t: "同意代练", d: { status: 8, pop: -3, box: true }, n: "箱子进了柴房。外门更静。" },
+          { t: "请留人手", d: { status: -2, money: -8 }, n: "你掏了钱。人没走几个。" },
+          { t: "比试掌门", fight: { enemy: "掌门", power: 78 },
+            win: { d: { status: 6 }, n: "你赢了。掌门没再提箱子。" },
+            lose: { d: { status: -8, pop: -1 }, n: "你输了。有人连夜下山。" } },
+        ]
+      });
+    }
+  }
+
+  if (loc === "market") {
+    if (empty) {
+      list.push({
+        title: "市集",
+        body: "棚子还在。秤放在桌上。风把一张价目吹过街。",
+        choices: [
+          { t: "捡起来", d: { money: 2 }, n: "价目上没有人的名字。" },
+          { t: "离开", d: {}, n: "市集空了。" },
+        ]
+      });
+    } else if (!late) {
+      list.push({
+        title: "市集",
+        body: "铺子请你写一块招牌。学徒在旁边磨墨，等你落笔。",
+        choices: [
+          { t: "写了", d: { money: 8, status: 1 }, n: "招牌挂上。学徒还在。" },
+          { t: "让学徒写，你署名", d: { money: 14, pop: -1 }, n: "招牌挂上。学徒晚上没回来。" },
+          { t: "不写", d: { money: -2 }, n: "铺子另请了人。" },
+        ]
+      });
+    } else {
+      list.push({
+        title: "市集",
+        body: "有人卖现成的招牌，一天能出二十块，字一个样。老板问你入不入股。",
+        choices: [
+          { t: "入股", d: { money: 20, pop: -2, status: 5, box: true }, n: "钱来了。写字的摊少了。" },
+          { t: "买一块看看", d: { money: -4, status: -1 }, n: "字很齐。没有笔锋。" },
+          { t: "不入", d: { money: -6 }, n: "你的旧活没人问。" },
+        ]
+      });
+    }
+  }
+
+  if (loc === "wild") {
+    if (!S.box && S.month >= 3) {
+      list.push({
+        title: "山野",
+        body: "树下有一口铜箱。旁边写：投进去的字会自己出来，更快更齐。箱旁的土是新的，像有人坐过，人已经不在。",
+        choices: [
+          { t: "投一次", d: { status: 14, money: 8, box: true, popAll: -1 }, n: "字出来了，很快。下山时路上人少。" },
+          { t: "关上", d: { status: -1 }, n: "你没投。箱子还在。" },
+          { t: "砸箱子", fight: { enemy: "守箱的人", power: 70 },
+            win: { d: { status: 2 }, n: "箱子凹了一块。还在响。" },
+            lose: { d: { status: -10, money: -5 }, n: "你被打下山。箱子还在。" } },
+        ]
+      });
+    } else if (S.box) {
+      list.push({
+        title: "山野",
+        body: "铜箱还在。投一次，能顶你从前一个月的活。山道上遇见的人更少了。",
+        choices: [
+          { t: "再投", d: { status: 10, money: 12, popAll: -1 }, n: "字又出来了。路更静。" },
+          { t: "不投", d: { money: -3 }, n: "你空手下山。" },
+          { t: "守着，不让别人投", fight: { enemy: "来投的人", power: 62 },
+            win: { d: { status: 3, pop: -1 }, n: "来的人走了。也许不只是走了。" },
+            lose: { d: { status: -5 }, n: "别人投了。你看着。" } },
+        ]
+      });
+    } else {
+      list.push({
+        title: "山野",
+        body: "山里只有风。有猎人路过，问你城里的活还好不好接。",
+        choices: [
+          { t: "说还好", d: { status: 1 }, n: "猎人嗯了一声，走了。" },
+          { t: "说不好接了", d: { status: -1 }, n: "猎人没再问。" },
+        ]
+      });
+    }
+  }
+
+  if (list.length === 0) {
+    list.push({
+      title: NAMES[loc],
+      body: "这个月这里没什么事。",
+      choices: [{ t: "离开", d: {}, n: "无事。" }]
+    });
+  }
+  return list[Math.floor(Math.random() * list.length)];
+}
+
+function runChoice(ch, loc) {
+  if (ch.fight) {
+    autoFight(NAMES[loc], ch.fight.enemy, ch.fight.power,
+      () => { apply(ch.win.d, loc); closeCard(); nextMonth(ch.win.n); },
+      () => { apply(ch.lose.d, loc); closeCard(); nextMonth(ch.lose.n); }
+    );
+    return;
+  }
+  apply(ch.d || {}, loc);
+  closeCard();
+  nextMonth(ch.n);
+}
+
+function visit(loc) {
+  if (S.busy || S.ended) return;
+  if (S.pop[loc] <= 0 && loc !== "wild") {
+    /* still visitable empty */
+  }
+  S.busy = true;
+  const ev = eventsFor(loc);
+  let html = "<h3>" + ev.title + "</h3><div class='body'>" + ev.body + "</div><div class='choices'></div>";
+  openCard(html);
+  const box = el("card").querySelector(".choices");
+  ev.choices.forEach((ch, i) => {
+    const b = document.createElement("button");
+    b.textContent = (i + 1) + "　" + ch.t;
+    b.onclick = () => runChoice(ch, loc);
+    box.appendChild(b);
+  });
+}
+
+["town", "sect", "market", "wild"].forEach(id => {
+  el(id).addEventListener("click", () => visit(id));
+});
+
+log("你还被人认得。这个月去哪儿。");
+render();
+</script>
+</body>
+</html>
