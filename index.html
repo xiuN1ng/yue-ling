@@ -5,49 +5,138 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>空庭录</title>
 <style>
-:root{--bg:#16130f;--panel:#221c16;--ink:#eadfc8;--mute:#8b7f6c;--gold:#c9a45c;--red:#b44a3c;--line:#3b3329;--ok:#6a8f5a}
+@import url('https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@400;600;700&display=swap');
+:root{
+  --bg:#e8dfc8;
+  --paper:#f3ead4;
+  --panel:#efe4cc;
+  --ink:#2a241c;
+  --mute:#6e6456;
+  --cinnabar:#a33b2b;
+  --seal:#9c2f24;
+  --line:#c4b79a;
+  --wash:#d9ceb3;
+  --gold:#8a6b32;
+}
 *{box-sizing:border-box;margin:0;padding:0}
-html,body{height:100%;background:var(--bg);color:var(--ink);font-family:"Songti SC","Noto Serif SC","Source Han Serif SC",serif}
-body{display:flex;flex-direction:column}
-header{display:flex;justify-content:space-between;align-items:center;padding:10px 16px;border-bottom:1px solid var(--line)}
-header h1{font-size:17px;letter-spacing:.28em;font-weight:600}
-.top{display:flex;gap:16px;font-size:13px;color:var(--gold)}
-.top b{color:var(--ink)}
-.wrap{flex:1;display:grid;grid-template-columns:220px 1fr 220px;min-height:0}
-@media(max-width:900px){.wrap{grid-template-columns:1fr}aside{border:0;border-top:1px solid var(--line)}}
-aside{padding:12px;overflow:auto;background:var(--panel)}
+html,body{height:100%;background:
+  radial-gradient(ellipse at 20% 0%, rgba(163,59,43,.06), transparent 40%),
+  radial-gradient(ellipse at 90% 100%, rgba(42,36,28,.05), transparent 45%),
+  linear-gradient(180deg,#efe6d0 0%, var(--bg) 40%, #e2d7bc 100%);
+  color:var(--ink);font-family:"Noto Serif SC","Songti SC","Source Han Serif SC",serif}
+body{display:flex;flex-direction:column;min-height:100%}
+body::before{
+  content:"";position:fixed;inset:0;pointer-events:none;opacity:.35;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='180' height='180' filter='url(%23n)' opacity='.28'/%3E%3C/svg%3E");
+  mix-blend-mode:multiply;z-index:0}
+header, .wrap, .hint, .ov{position:relative;z-index:1}
+header{
+  display:flex;justify-content:space-between;align-items:flex-end;
+  padding:18px 22px 14px;border-bottom:1px solid var(--line);
+  background:linear-gradient(180deg,rgba(243,234,212,.9),rgba(232,223,200,.55));
+}
+header h1{
+  font-size:22px;letter-spacing:.42em;font-weight:700;color:var(--ink);
+  text-shadow:0 1px 0 rgba(255,255,255,.35);
+}
+header h1::after{content:"";display:block;width:42px;height:2px;background:var(--cinnabar);margin-top:6px;opacity:.75}
+.top{display:flex;gap:18px;font-size:13px;color:var(--mute);padding-bottom:4px}
+.top b{color:var(--ink);font-weight:600}
+.wrap{flex:1;display:grid;grid-template-columns:240px 1fr 240px;min-height:0}
+@media(max-width:900px){.wrap{grid-template-columns:1fr}aside{border:0!important;border-top:1px solid var(--line)!important}}
+aside{
+  padding:16px 14px;overflow:auto;
+  background:
+    linear-gradient(180deg,rgba(255,252,245,.55),rgba(239,228,204,.35)),
+    var(--panel);
+}
 aside.left{border-right:1px solid var(--line)}
 aside.right{border-left:1px solid var(--line)}
-h2{font-size:12px;letter-spacing:.24em;color:var(--gold);margin:0 0 8px}
-.who{display:flex;gap:10px;align-items:center;margin-bottom:10px}
-.seal{width:44px;height:44px;border:1px solid var(--gold);display:flex;align-items:center;justify-content:center;letter-spacing:.2em;font-size:15px}
-.kv{display:flex;justify-content:space-between;font-size:13px;margin:3px 0;color:var(--mute)}
+h2{font-size:12px;letter-spacing:.28em;color:var(--cinnabar);margin:0 0 10px;font-weight:600}
+.who{display:flex;gap:12px;align-items:center;margin-bottom:14px}
+.seal{
+  width:56px;height:56px;border-radius:6px;
+  background:
+    radial-gradient(circle at 30% 25%, rgba(255,255,255,.18), transparent 45%),
+    linear-gradient(145deg,#b44536,#8a2a20 55%,#7a241b);
+  color:#f6e6d8;display:flex;align-items:center;justify-content:center;
+  writing-mode:vertical-rl;letter-spacing:.18em;font-size:15px;font-weight:700;
+  box-shadow:inset 0 0 0 2px rgba(246,230,216,.35), 0 2px 0 rgba(42,36,28,.12);
+  text-shadow:0 1px 0 rgba(0,0,0,.18);
+}
+.who .nm{font-size:16px;letter-spacing:.2em;font-weight:600}
+.who .sub{color:var(--mute);font-size:12px;margin-top:3px;letter-spacing:.08em}
+.kv{display:flex;justify-content:space-between;font-size:13px;margin:4px 0;color:var(--mute)}
 .kv b{color:var(--ink);font-weight:600}
-.bar{height:6px;background:#2c261f;margin:2px 0 8px}
-.bar>i{display:block;height:100%;background:var(--gold)}
-.skill{border:1px solid var(--line);padding:7px 8px;margin:6px 0;cursor:pointer;font-size:13px}
-.skill.on{border-color:var(--gold);background:#2b241c}
-.skill .n{color:var(--gold)}
-.skill .d{color:var(--mute);font-size:12px;margin-top:2px}
-.map{position:relative;min-height:460px;background:radial-gradient(ellipse at 50% 42%,#2a231c,var(--bg) 72%)}
-.node{position:absolute;width:128px;transform:translate(-50%,-50%);background:var(--panel);border:1px solid var(--gold);padding:10px 8px;text-align:center;cursor:pointer}
-.node:hover{background:#2d261e}
-.node.empty{border-color:var(--line);color:var(--mute)}
-.node .name{letter-spacing:.2em;font-size:16px}
-.node .m{font-size:12px;color:var(--mute);margin-top:4px;line-height:1.45}
-#town{left:50%;top:26%}#sect{left:20%;top:58%}#market{left:80%;top:58%}#wild{left:50%;top:84%}
+.bar{height:5px;background:var(--wash);margin:2px 0 9px;border-radius:2px;overflow:hidden}
+.bar>i{display:block;height:100%;background:linear-gradient(90deg,#8f3d32,var(--cinnabar));border-radius:2px}
+.skill{
+  border:1px solid var(--line);padding:8px 9px;margin:7px 0;cursor:pointer;font-size:13px;
+  background:rgba(255,252,245,.55);border-radius:2px;
+}
+.skill.on{border-color:var(--cinnabar);background:rgba(163,59,43,.08);box-shadow:inset 3px 0 0 var(--cinnabar)}
+.skill .n{color:var(--ink);font-weight:600;letter-spacing:.08em}
+.skill .d{color:var(--mute);font-size:12px;margin-top:3px;line-height:1.45}
+.map{
+  position:relative;min-height:480px;
+  background:
+    radial-gradient(ellipse at 50% 40%, rgba(255,252,245,.55), transparent 60%),
+    linear-gradient(180deg,#ebe1c8,#e2d6b8);
+}
+.map::before{
+  content:"空庭";position:absolute;left:50%;top:48%;transform:translate(-50%,-50%);
+  font-size:72px;letter-spacing:.5em;color:rgba(42,36,28,.05);pointer-events:none;font-weight:700;
+}
+.node{
+  position:absolute;width:138px;transform:translate(-50%,-50%);
+  background:
+    linear-gradient(180deg,rgba(255,252,245,.92),rgba(243,234,212,.88));
+  border:1px solid #b7a888;padding:12px 10px 11px;text-align:center;cursor:pointer;
+  box-shadow:0 1px 0 rgba(255,255,255,.5), 0 3px 10px rgba(42,36,28,.08);
+  border-radius:2px;
+}
+.node::before{
+  content:"";position:absolute;left:8px;right:8px;top:6px;height:1px;background:rgba(163,59,43,.35);
+}
+.node:hover{border-color:var(--cinnabar);transform:translate(-50%,-52%)}
+.node.thin{opacity:.72;border-style:dashed}
+.node.empty{opacity:.55;color:var(--mute);border-style:dashed;background:rgba(243,234,212,.7)}
+.node .name{letter-spacing:.28em;font-size:17px;font-weight:700;color:var(--ink);margin-top:4px}
+.node .m{font-size:12px;color:var(--mute);margin-top:6px;line-height:1.55}
+.node.empty .name{color:var(--mute)}
+#town{left:50%;top:24%}#sect{left:18%;top:56%}#market{left:82%;top:56%}#wild{left:50%;top:82%}
 svg.r{position:absolute;inset:0;width:100%;height:100%;pointer-events:none}
-#log p{font-size:12px;color:var(--mute);line-height:1.5;margin:0 0 8px}
-.hint{padding:8px 16px 12px;font-size:12px;color:var(--mute);border-top:1px solid var(--line)}
-.ov{position:fixed;inset:0;background:rgba(8,6,4,.75);display:none;align-items:center;justify-content:center;padding:16px}
+#log{
+  min-height:280px;padding:12px 12px 16px;border:1px solid var(--line);
+  background:
+    repeating-linear-gradient(transparent, transparent 27px, rgba(163,59,43,.08) 28px),
+    linear-gradient(180deg,#f7f0de,#efe4c8);
+  box-shadow:inset 0 0 40px rgba(42,36,28,.04);
+}
+#log p{
+  font-size:13px;color:var(--ink);line-height:1.65;margin:0 0 10px;
+  padding-bottom:8px;border-bottom:1px dashed rgba(196,183,154,.7);
+}
+#log p:first-child{color:var(--cinnabar)}
+.hint{
+  padding:10px 22px 14px;font-size:13px;color:var(--mute);
+  border-top:1px solid var(--line);background:rgba(243,234,212,.55);
+}
+.ov{position:fixed;inset:0;background:rgba(42,36,28,.45);display:none;align-items:center;justify-content:center;padding:16px}
 .ov.show{display:flex}
-.card{width:min(460px,100%);background:#1f1a15;border:1px solid var(--gold);padding:18px}
-.card h3{font-size:15px;letter-spacing:.16em;color:var(--gold);margin-bottom:8px}
-.card .body{font-size:15px;line-height:1.7;margin-bottom:12px}
-.btns button,.menu button{display:block;width:100%;text-align:left;margin:0 0 7px;padding:9px 10px;background:var(--panel);border:1px solid var(--line);color:var(--ink);font:inherit;cursor:pointer}
-.btns button:hover,.menu button:hover{border-color:var(--gold)}
-.clog{height:168px;overflow:auto;background:#16120e;border:1px solid var(--line);padding:8px;font-size:13px;line-height:1.55;margin:8px 0}
-.clog .hit{color:var(--red)}
+.card{
+  width:min(460px,100%);background:#f6efdc;border:1px solid #b7a888;padding:20px;
+  box-shadow:0 12px 40px rgba(42,36,28,.18);color:var(--ink);
+}
+.card h3{font-size:16px;letter-spacing:.2em;color:var(--cinnabar);margin-bottom:10px;font-weight:700}
+.card .body{font-size:15px;line-height:1.75;margin-bottom:14px;color:var(--ink)}
+.btns button,.menu button{
+  display:block;width:100%;text-align:left;margin:0 0 8px;padding:10px 12px;
+  background:#f3ead4;border:1px solid var(--line);color:var(--ink);font:inherit;cursor:pointer;
+}
+.btns button:hover,.menu button:hover{border-color:var(--cinnabar);background:#f8f1df}
+.clog{height:168px;overflow:auto;background:#efe4c8;border:1px solid var(--line);padding:8px;font-size:13px;line-height:1.55;margin:8px 0}
+.clog .hit{color:var(--cinnabar)}
 .clog .you{color:var(--gold)}
 </style>
 </head>
@@ -63,7 +152,7 @@ svg.r{position:absolute;inset:0;width:100%;height:100%;pointer-events:none}
 <div class="wrap">
   <aside class="left">
     <h2>人物</h2>
-    <div class="who"><div class="seal">沈</div><div><div>沈衡</div><div style="color:var(--mute);font-size:12px" id="sub">旧笔在手</div></div></div>
+    <div class="who"><div class="seal" aria-hidden="true">沈衡</div><div><div class="nm">沈衡</div><div class="sub" id="sub">旧笔在手</div></div></div>
     <div class="kv">身份 <b id="rank">74</b></div>
     <div class="bar"><i id="rankBar" style="width:74%"></i></div>
     <div class="kv">笔力 <b id="sBi">14</b></div><div class="bar"><i id="bBi"></i></div>
@@ -75,15 +164,15 @@ svg.r{position:absolute;inset:0;width:100%;height:100%;pointer-events:none}
   </aside>
   <div class="map">
     <svg class="r" viewBox="0 0 100 100" preserveAspectRatio="none">
-      <line x1="50" y1="26" x2="20" y2="58" stroke="#3b3329" stroke-width=".45"/>
-      <line x1="50" y1="26" x2="80" y2="58" stroke="#3b3329" stroke-width=".45"/>
-      <line x1="20" y1="58" x2="50" y2="84" stroke="#3b3329" stroke-width=".45"/>
-      <line x1="80" y1="58" x2="50" y2="84" stroke="#3b3329" stroke-width=".45"/>
+      <line x1="50" y1="26" x2="20" y2="58" stroke="#b7a888" stroke-width=".45"/>
+      <line x1="50" y1="26" x2="80" y2="58" stroke="#b7a888" stroke-width=".45"/>
+      <line x1="20" y1="58" x2="50" y2="84" stroke="#b7a888" stroke-width=".45"/>
+      <line x1="80" y1="58" x2="50" y2="84" stroke="#b7a888" stroke-width=".45"/>
     </svg>
-    <div class="node" id="town" data-id="town"></div>
-    <div class="node" id="sect" data-id="sect"></div>
-    <div class="node" id="market" data-id="market"></div>
-    <div class="node" id="wild" data-id="wild"></div>
+    <div class="node" id="town" data-id="town"><div class="name">城镇</div><div class="m">人 12　繁荣 6<br>稳定 5</div></div>
+    <div class="node" id="sect" data-id="sect"><div class="name">宗门</div><div class="m">人 8　繁荣 4<br>稳定 7</div></div>
+    <div class="node" id="market" data-id="market"><div class="name">市集</div><div class="m">人 14　繁荣 8<br>稳定 3</div></div>
+    <div class="node" id="wild" data-id="wild"><div class="name">山野</div><div class="m">人 5　繁荣 2<br>稳定 4</div></div>
   </div>
   <aside class="right">
     <h2>月记</h2>
@@ -149,8 +238,12 @@ function render(){
   }
   for(const id of Object.keys(LOC)){
     const L=LOC[id], n=$(id);
-    n.className="node"+(L.pop<=0?" empty":"");
-    n.innerHTML="<div class='name'>"+L.name+"</div><div class='m'>人 "+L.pop+"　繁荣 "+L.pro+"<br>稳定 "+L.stb+"</div>";
+    let cls="node";
+    if(L.pop<=0) cls+=" empty";
+    else if(L.pop<=3) cls+=" thin";
+    n.className=cls;
+    const people = L.pop<=0 ? "空" : ("人 "+L.pop);
+    n.innerHTML="<div class='name'>"+L.name+"</div><div class='m'>"+people+"　繁荣 "+L.pro+"<br>稳定 "+L.stb+"</div>";
   }
 }
 function openC(html){$("card").innerHTML=html; $("ov").classList.add("show")}
